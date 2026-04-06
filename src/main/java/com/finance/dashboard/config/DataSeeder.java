@@ -19,18 +19,22 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (!userRepository.existsByUsername("admin")) {
-            User admin = User.builder()
-                    .username("admin")
-                    .email("admin@finance.com")
-                    .password(passwordEncoder.encode("admin123"))
-                    .role(Role.ADMIN)
-                    .active(true)
-                    .build();
-            userRepository.save(admin);
-            log.info("✅ Default admin user created — username: admin, password: admin123");
-        }
 
+        // Delete and recreate admin every time app starts
+        userRepository.findByUsername("admin")
+                .ifPresent(userRepository::delete);
+
+        User admin = User.builder()
+                .username("admin")
+                .email("admin@finance.com")
+                .password(passwordEncoder.encode("admin123"))
+                .role(Role.ADMIN)
+                .active(true)
+                .build();
+        userRepository.save(admin);
+        log.info("Admin user created — username: admin, password: admin123");
+
+        // Create analyst only if not exists
         if (!userRepository.existsByUsername("analyst")) {
             User analyst = User.builder()
                     .username("analyst")
@@ -40,9 +44,10 @@ public class DataSeeder implements CommandLineRunner {
                     .active(true)
                     .build();
             userRepository.save(analyst);
-            log.info("✅ Default analyst user created — username: analyst, password: analyst123");
+            log.info("Analyst user created — username: analyst, password: analyst123");
         }
 
+        // Create viewer only if not exists
         if (!userRepository.existsByUsername("viewer")) {
             User viewer = User.builder()
                     .username("viewer")
@@ -52,7 +57,7 @@ public class DataSeeder implements CommandLineRunner {
                     .active(true)
                     .build();
             userRepository.save(viewer);
-            log.info("✅ Default viewer user created — username: viewer, password: viewer123");
+            log.info("Viewer user created — username: viewer, password: viewer123");
         }
     }
 }
