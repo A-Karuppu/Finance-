@@ -20,21 +20,27 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        // Delete and recreate admin every time app starts
-        userRepository.findByUsername("admin")
-                .ifPresent(userRepository::delete);
+        // ✅ Create or Update Admin (NO DELETE)
+        User admin = userRepository.findByUsername("admin")
+                .map(existingUser -> {
+                    existingUser.setPassword(passwordEncoder.encode("admin123"));
+                    existingUser.setEmail("admin@finance.com");
+                    existingUser.setRole(Role.ADMIN);
+                    existingUser.setActive(true);
+                    return existingUser;
+                })
+                .orElseGet(() -> User.builder()
+                        .username("admin")
+                        .email("admin@finance.com")
+                        .password(passwordEncoder.encode("admin123"))
+                        .role(Role.ADMIN)
+                        .active(true)
+                        .build());
 
-        User admin = User.builder()
-                .username("admin")
-                .email("admin@finance.com")
-                .password(passwordEncoder.encode("admin123"))
-                .role(Role.ADMIN)
-                .active(true)
-                .build();
         userRepository.save(admin);
-        log.info("Admin user created — username: admin, password: admin123");
+        log.info("Admin user ready — username: admin");
 
-        // Create analyst only if not exists
+        // ✅ Analyst
         if (!userRepository.existsByUsername("analyst")) {
             User analyst = User.builder()
                     .username("analyst")
@@ -44,10 +50,10 @@ public class DataSeeder implements CommandLineRunner {
                     .active(true)
                     .build();
             userRepository.save(analyst);
-            log.info("Analyst user created — username: analyst, password: analyst123");
+            log.info("Analyst user created");
         }
 
-        // Create viewer only if not exists
+        // ✅ Viewer
         if (!userRepository.existsByUsername("viewer")) {
             User viewer = User.builder()
                     .username("viewer")
@@ -57,7 +63,7 @@ public class DataSeeder implements CommandLineRunner {
                     .active(true)
                     .build();
             userRepository.save(viewer);
-            log.info("Viewer user created — username: viewer, password: viewer123");
+            log.info("Viewer user created");
         }
     }
 }
